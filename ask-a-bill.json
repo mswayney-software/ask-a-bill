@@ -1,0 +1,365 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        -176
+      ],
+      "id": "cbef35f8-d35e-499f-9091-43df5e9e9e48",
+      "name": "Run"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      source: \"H.R. 7148 - Consolidated Appropriations Act, 2026\",\n      text: `H.R. 7148, the Consolidated Appropriations Act, 2026, was signed into law on February 3, 2026 as Public Law 119-75.\n\nSHORT TITLE AND CONTENTS. This Act may be cited as the Consolidated Appropriations Act, 2026. Section 1 is the short title. Section 2 is the table of contents. Section 3 covers references. Section 4 covers the explanatory statement. Section 5 is the statement of appropriations. Section 6 covers payment to widows and heirs of deceased Members of Congress.\n\nDIVISIONS INCLUDED. The Act enacts five of the twelve regular fiscal year 2026 appropriations bills: Division A, the Department of Defense Appropriations Act, 2026; Division B, the Departments of Labor, Health and Human Services, and Education, and Related Agencies Appropriations Act, 2026; Division D, the Transportation, Housing and Urban Development, and Related Agencies Appropriations Act, 2026; the Financial Services and General Government Appropriations Act, 2026; and the National Security, Department of State, and Related Programs Appropriations Act, 2026.\n\nOVERVIEW. This bill provides appropriations to several federal departments and agencies for the remainder of fiscal year 2026 and provides continuing fiscal year 2026 appropriations for the Department of Homeland Security through February 13, 2026. It also extends various expiring programs and authorities.\n\nCONTINUING RESOLUTION FOR HOMELAND SECURITY. The bill includes a continuing resolution that provides continuing fiscal year 2026 appropriations to the Department of Homeland Security through the earlier of February 13, 2026, or the enactment of the DHS appropriations act. The continuing resolution funds most DHS programs and activities at the fiscal year 2025 levels.\n\nDEPARTMENT OF DEFENSE TRANSFER AUTHORITY. Upon determination by the Secretary of Defense that such action is necessary in the national interest, the Secretary may, with the approval of the Director of the Office of Management and Budget, transfer not to exceed $6,000,000,000 of working capital funds of the Department of Defense or funds made available in this Act for military functions, except military construction, between such appropriations or funds. Such authority to transfer may not be used unless for higher priority items, based on unforeseen military requirements, than those for which originally appropriated, and in no case where the item has been denied by the Congress. The Secretary of Defense shall notify the Congress promptly of all transfers made.\n\nMULTIYEAR PROCUREMENT. Funds appropriated to the Department of Defense in title III of this Act may be used for multiyear procurement contracts for a period of not more than five years for the following: Standard Missile-6; Long Range Anti-Ship Missile; Joint Air-to-Surface Standoff Missile Extended Range; Advanced Medium-Range Air-to-Air Missile; and Standard Missile-3 Block 1B. Multiyear procurement contracts for a period of not more than seven years are authorized for the following: PATRIOT Advanced Capability-3 Missile Segment Enhancement; Terminal High Altitude Area Defense; and Tomahawk Cruise Missile Systems.`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        -176
+      ],
+      "id": "2616f4df-0305-4d30-a426-6c3b65fcc4f3",
+      "name": "Load Bill Text"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        -784,
+        -176
+      ],
+      "id": "d034dd3d-68f8-4732-9a9e-50f195db4cb6",
+      "name": "Index Bill (store)"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        64
+      ],
+      "id": "2a9c319d-735c-4695-a0d4-2f2f00d2683c",
+      "name": "Embed Chunks (Ollama)",
+      "credentials": {
+        "ollamaApi": {
+          "id": "GupOaNWk2t5DZPnl",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -752,
+        64
+      ],
+      "id": "ff9074ba-a8f6-4720-bad9-e8817265e995",
+      "name": "Chunk Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 600,
+        "chunkOverlap": 40,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        272
+      ],
+      "id": "74c6deb4-5934-4caa-ade9-28ed4cddb2d5",
+      "name": "Splitter 600/40 (recommended)"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -176
+      ],
+      "id": "d90d5dac-6a61-439f-819d-ca82f43ae260",
+      "name": "Limit to 1 (one question)"
+    },
+    {
+      "parameters": {
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        224
+      ],
+      "id": "91802d34-587f-41b3-bf1d-b6ebc53a82e2",
+      "name": "Search Bill (Retrieve)"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        112,
+        432
+      ],
+      "id": "a337a438-379a-49c0-b158-5e295c0b3ec1",
+      "name": "Embed Question (Ollama)",
+      "credentials": {
+        "ollamaApi": {
+          "id": "GupOaNWk2t5DZPnl",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "topK": 8
+      },
+      "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+      "typeVersion": 1,
+      "position": [
+        192,
+        64
+      ],
+      "id": "3a57cd94-b6ea-4cf1-9516-bb965fb43e59",
+      "name": "Retriever (Top K 8 Recommended)"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Which missiles and systems are approved for multiyear procurement, and what are the time limits?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
+      "typeVersion": 1.7,
+      "position": [
+        64,
+        -176
+      ],
+      "id": "ed2b7b33-c74a-4f06-830a-c2e902aa79d1",
+      "name": "Answer with Claude"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-6",
+          "cachedResultName": "Claude Sonnet 4.6"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        64,
+        64
+      ],
+      "id": "aed252d0-a2f9-4be5-b954-a645bd73947e",
+      "name": "Claude Sonnet 4.6",
+      "credentials": {
+        "anthropicApi": {
+          "id": "PkeffdiQdAyuVLbR",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "\nPHASE 1: INDEXING",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -896,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "8b0543be-4cfe-4846-a6fd-09659218bd76",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "PHASE 2: QUERYING",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        112,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "cb03cef5-0d9c-4528-bce4-9807d53079da",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run": {
+      "main": [
+        [
+          {
+            "node": "Load Bill Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Bill Text": {
+      "main": [
+        [
+          {
+            "node": "Index Bill (store)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Index Bill (store)": {
+      "main": [
+        [
+          {
+            "node": "Limit to 1 (one question)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed Chunks (Ollama)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Index Bill (store)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Index Bill (store)",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Splitter 600/40 (recommended)": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Chunk Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit to 1 (one question)": {
+      "main": [
+        [
+          {
+            "node": "Answer with Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Bill (Retrieve)": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Retriever (Top K 8 Recommended)",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed Question (Ollama)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Search Bill (Retrieve)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retriever (Top K 8 Recommended)": {
+      "ai_retriever": [
+        [
+          {
+            "node": "Answer with Claude",
+            "type": "ai_retriever",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Sonnet 4.6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer with Claude",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "610d79d1-b71e-4c32-a7d3-8da72f9837aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4ad084c66c641f28090f12c4ed9f4e51f761e35cec981fccbaef2767b833191a"
+  },
+  "nodeGroups": [],
+  "id": "2phrlkB52X4YbAt3",
+  "tags": []
+}
